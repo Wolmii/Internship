@@ -2,3 +2,5 @@
 10/04/2026 ~ 15/06/2026
 
 # Introduction to Neural Language Processing using hasktorch
+
+In this internship, the main goal is to focus on the functionment of AI, and of neurons systems. 
