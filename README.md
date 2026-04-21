@@ -7,6 +7,14 @@ In this internship, the main goal is to focus on the functionment of AI, and of 
 
 # Session 3 Report : 
 
+Resultst :
 Cost : Tensor Float []  558.6971   
 New A : Tensor Float []  0.5553
 New B : Tensor Float []  94.5845
+
+Talking with Swann, we hesitated to normalize the values
+
+![Graph](learning_curve.png)
+
+
+I choosed to analyze the GRE Scores ( out of 340 )
