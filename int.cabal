@@ -35,6 +35,9 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , hasktorch
+    , nlp-tools
+    , hasktorch-tools
   default-language: Haskell2010
 
 executable int-exe
@@ -48,6 +51,24 @@ executable int-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , hasktorch
+    , hasktorch-tools
+    , int
+  default-language: Haskell2010
+
+executable sess3
+  main-is: LinearRegression.hs
+  other-modules:
+      Paths_int
+  autogen-modules:
+      Paths_int
+  hs-source-dirs:
+      Session3
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , hasktorch
+    , hasktorch-tools
     , int
   default-language: Haskell2010
 
@@ -63,5 +84,7 @@ test-suite int-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , hasktorch
+    , hasktorch-tools
     , int
   default-language: Haskell2010
