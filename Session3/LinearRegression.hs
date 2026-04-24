@@ -43,7 +43,7 @@ train :: Int -> Tensor -> Tensor -> [Float] -> IO ()
 train 0 a b history = do
     putStrLn "end"
     let chartData = [("Cost", reverse history)]
-    drawLearningCurve "learning_curve.png" "Mon Graphique" chartData
+    drawLearningCurve "learning_curve1.png" "Mon Graphique" chartData
     putStrLn "Graphique généré : learning_curve.png"
 train epochs a b history = do
     let xEsti = map (\x -> asValue (linear (a, b) (asTensor x)) :: Float) xs
