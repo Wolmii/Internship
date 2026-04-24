@@ -1,3 +1,5 @@
+module LinearRegression where
+
 import Torch.Tensor (Tensor, asTensor, asValue, shape)
 import Torch.Functional (matmul, add, transpose2D, sumAll)
 import ML.Exp.Chart (drawLearningCurve)
@@ -62,5 +64,5 @@ main :: IO ()
 main = do
     let sampleA = 0.0
     let sampleB = 0.0
-    train epoch sampleA sampleB []
+    -- train epoch sampleA sampleB []
     return ()

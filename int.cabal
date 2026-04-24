@@ -35,10 +35,13 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , bytestring
+    , cassava
     , gnuplot
     , hasktorch
     , hasktorch-tools
     , nlp-tools
+    , vector
   default-language: Haskell2010
 
 executable int-exe
@@ -52,11 +55,14 @@ executable int-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
+    , cassava
     , gnuplot
     , hasktorch
     , hasktorch-tools
     , int
     , nlp-tools
+    , vector
   default-language: Haskell2010
 
 executable sess3
@@ -71,11 +77,36 @@ executable sess3
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
+    , cassava
     , gnuplot
     , hasktorch
     , hasktorch-tools
     , int
     , nlp-tools
+    , vector
+  default-language: Haskell2010
+
+executable sess3.2
+  main-is: GraduateAdmissionLinear.hs
+  other-modules:
+      LinearRegression
+      Paths_int
+  autogen-modules:
+      Paths_int
+  hs-source-dirs:
+      Session3
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , cassava
+    , gnuplot
+    , hasktorch
+    , hasktorch-tools
+    , int
+    , nlp-tools
+    , vector
   default-language: Haskell2010
 
 test-suite int-test
@@ -90,9 +121,12 @@ test-suite int-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
+    , cassava
     , gnuplot
     , hasktorch
     , hasktorch-tools
     , int
     , nlp-tools
+    , vector
   default-language: Haskell2010
