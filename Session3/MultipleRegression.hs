@@ -12,6 +12,8 @@ xs2 :: [Int]
 xs2 = [111, 136, 170, 179, 263, 236, 111, 120, 260, 100, 260, 222, 160, 152, 234]
 alphA :: Tensor
 alphA = 0.000035
+alphA2 :: Tensor
+alphA2 = 0.000035
 alphB :: Tensor
 alphB = 0.5
 epoch :: Int
@@ -34,8 +36,9 @@ cost z z' = (1/(2* asTensor (shape z !! 0))) * (sumAll ((z'-z)*(z'-z)))
 calculateNewA :: 
      Tensor ->
      Tensor ->
+     Tensor ->
      Tensor
-calculateNewA a xEstimated = (asValue a) - (alphA*((1/(asTensor(length xs))) * (sumAll ((asTensor xs)*(xEstimated-(asTensor ys))))))
+calculateNewA a xEstimated alpha = (asValue a) - (alpha*((1/(asTensor(length xs))) * (sumAll ((asTensor xs)*(xEstimated-(asTensor ys))))))
 
 calculateNewB :: 
      Tensor ->
@@ -43,23 +46,17 @@ calculateNewB ::
      Tensor
 calculateNewB b xEstimated = (asValue b) - (alphB*((1/(asTensor(length xs))) * (sumAll (xEstimated-(asTensor ys)))))
 
-train :: Int -> Tensor -> Tensor -> [Float] -> [Float] -> IO ()
-train 0 a a2 b history hist= do
+train :: Int -> Tensor -> Tensor -> [Float] -> IO ()
+train 0 a a2 b history = do
     putStrLn "end"
     let chartData = [("Cost", reverse history)]
     drawLearningCurve "learning_curvemul1.png" "Mon Graphique" chartData
     putStrLn "Graphique généré : learning_curve.png"
-    let chartData = [("Cost2", reverse hist)]
-    drawLearningCurve "learning_curvemul2.png" "Mon Graphique" chartData
-    putStrLn "Graphique généré : learning_curve.png"
-train epochs a a2 b history hist = do
-    let xEsti = map (\x -> asValue (linear (a, b) (asTensor x)) :: Float) xs xs1
+train epochs a a2 b history = do
+    let xEsti = foldl (\acc (x,y) -> acc ++ asValue (linear (a, b) a2 (asTensor x) (asTensor y )) :: Float) [] (zip xs xs1)
     -- let res = foldl (\acc (x,y) -> acc ++ "correct answer: " ++ show y ++ "\n" ++ "estimated: " ++ show (linear (a, b) (asTensor x)) ++ "\n******\n") ""  (zip xs ys)
     let resCos = cost (asTensor ys) (asTensor xEsti)
     putStr "Cost : "
-    print resCos
-    let resCos2 = cost (asTensor ys) (asTensor xEsti2)
-    putStr "Cost2 : "
     print resCos
     let currentCost = asValue resCos
     let currentCost2 = asValue resCos2
@@ -72,11 +69,11 @@ train epochs a a2 b history hist = do
     let newB = calculateNewB b (asTensor xEsti)
     putStr "New B : "
     print newB
-    train (epochs - 1) newA newA2 newB (currentCost : history) (currentCost2 : hist)
+    train (epochs - 1) newA newA2 newB (currentCost : history)
 
 main :: IO ()
 main = do
     let sampleA = 0.0
     let sampleB = 0.0
-    -- train epoch sampleA sampleB []
+    train epoch sampleA sampleB [] []
     return ()
