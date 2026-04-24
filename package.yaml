@@ -72,6 +72,15 @@ executables:
     dependencies:
     - int
 
+  session-3-multiple-regression:
+    main:                MultipleRegression.hs
+    source-dirs:         Session3
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - int
   
 
 tests:
