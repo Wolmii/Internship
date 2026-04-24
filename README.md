@@ -18,3 +18,15 @@ Talking with Swann, we hesitated to normalize the values
 
 
 I choosed to analyze the GRE Scores ( out of 340 )
+
+The exercice wasn't really hard, i just struggled with the g/h to understand what i had to do. But at the moment i understood, it wasn't hard to make it work. 
+The main problem i eccounter was the errors, that aren't readable in haskell. 
+
+predict graph : 
+![predict](image.png)
+
+real graph : 
+![real](image-1.png)
+
+We can see that the prediction is really close to the reality. 
+As we can see, the predicted values are almost the same are real ones, and the cost is really low, showing that our model work very well. 
