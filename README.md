@@ -42,3 +42,22 @@ As we can see, the predicted values are almost the same are real ones, and the c
 I also struggled in the beggining with the graphs, but i asked for help, and now i understand it well. 
 
 Also, looking at swan's code, i think i don't use haskell at it's full potential right now, so i will try to iprove on this point, to write a more readable code, respectiong Haskell. 
+
+OVERHEATING / il remonde a droite en bas :(
+
+
+# Session 4 :
+
+## Xor explanations
+
+I commented the xor code for better understanding.
+
+But basically, it create a "model", with what we need in the code, and instance it. 
+After, it use this model to train on 2000 steps, and compare the result to an existing, and simplier version of it, to make sure it work properly. 
+
+## Comparation
+
+the sigmoid : it needs more training that the step to work, and it return a float, between 0 and 1, that need to be explained (if res > 0.5 == 1, and if res < 0.5 == 0).
+
+the tanhFunc : as the sigmoid, it returns a float. But the interpretation is the same. He can also be negative, but sigmoid can't. And Sigmoid need a lot more learning, with a smaller learning rate than tanh. 
+
