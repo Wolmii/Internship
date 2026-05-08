@@ -55,9 +55,19 @@ I commented the xor code for better understanding.
 But basically, it create a "model", with what we need in the code, and instance it. 
 After, it use this model to train on 2000 steps, and compare the result to an existing, and simplier version of it, to make sure it work properly. 
 
+The second one use a function already existing for activation, and some torch tools, that the first one implement alone. But it also use more hiden neurons to work. 
+
 ## Comparation
 
-the sigmoid : it needs more training that the step to work, and it return a float, between 0 and 1, that need to be explained (if res > 0.5 == 1, and if res < 0.5 == 0).
+the sigmoid : it return a float, between 0 and 1, that need to be explained (if res > 0.5 == 1, and if res < 0.5 == 0).
+Learning rate :  0.001
 
-the tanhFunc : as the sigmoid, it returns a float. But the interpretation is the same. He can also be negative, but sigmoid can't. And Sigmoid need a lot more learning, with a smaller learning rate than tanh. 
+##### Sigmoid graph : 
+![predict](graph-sig-xor.png)
+
+the tanhFunc : as the sigmoid, it returns a float. But the interpretation is the same. He can also be negative, but sigmoid can't. And Sigmoid need a lot more learning, with a smaller learning rate than tanh. So that make tanh slower faster, but also working less precisely, and with more loss. 
+Learning rate : 0.09
+
+##### Tanh graph : 
+![real](graph-tanh-xor.png)
 
