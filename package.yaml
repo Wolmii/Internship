@@ -94,6 +94,42 @@ executables:
     dependencies:
     - int
 
+  sess5:
+    main:                Evaluation.hs
+    source-dirs:         Session5
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -main-is Evaluation
+    dependencies:
+    - int
+
+  admit:
+    main:                Admit.hs
+    source-dirs:         Session5
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -main-is Admit
+    dependencies:
+    - int
+
+  bow:
+    main:                bow.hs
+    source-dirs:         Session6
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -main-is Bow
+    dependencies:
+    - int
+    - utf8-string
+    - bytestring
+    - containers
+
   session-3-multiple-regression:
     main:                MultipleRegression.hs
     source-dirs:         Session3

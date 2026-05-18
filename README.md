@@ -71,3 +71,27 @@ Learning rate : 0.09
 ##### Tanh graph : 
 ![real](graph-tanh-xor.png)
 
+# Session 5 
+
+## results : 
+
+TN : 1
+FP : 5
+FN : 0
+TP : 33
+precicsion  : 0.8684211
+recall  : 1.0
+accuracy  : 0.92957747
+
+We can see that our model predicted 33 true positives, 5 fake posities and one true negative. That leads us to a precision of 0.8, and that mean that we got 80% of the people we predicted admitted were really admitted. We have a 1 recall, that means that we predicted all the people that were really admitted. And 92% of our predictions were right over all, meaning our model is quite precise. 
+
+## Definition and use of survey on loss
+
+##### negative log entropy :
+She calculate the probability of the model being right. 
+
+##### Cross-Entropy : 
+calculate the cost of the prediction, but remembering the reality. 
+
+##### KL divergence :
+she medure the difference between chat we got and what we expected. 
