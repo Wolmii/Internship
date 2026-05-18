@@ -41,25 +41,30 @@ data Model = Model {
     embeddings :: Embedding
   } deriving (Show, Generic, Parameterized)
 
-isUnncessaryChar :: 
+data Use = Use {
+    embed :: Embedding
+    mod :: Model
+} deriving (Show, Generic, Parameterized)
+
+isUnncessaryChar :: -- get ride of useless points
   Word8 ->
   Bool
 isUnncessaryChar str = str `elem` (map (head . encode)) [".", "!"]
 
-preprocess ::
+preprocess :: -- preprocess the text, separating line  by line and word by word 
   B.ByteString -> -- input
   [[B.ByteString]]  -- wordlist per line
-preprocess texts = map (B.split (head $ encode " ")) textLines
+preprocess texts = map (B.split (head $ encode " ")) textLines -- word by word
   where
     filteredtexts = B.pack $ filter (not . isUnncessaryChar) (B.unpack texts)
-    textLines = B.split (head $ encode "\n") filteredtexts
+    textLines = B.split (head $ encode "\n") filteredtexts -- line by line
 
-wordToIndexFactory ::
+wordToIndexFactory :: -- take the words and create an index based on them
   [B.ByteString] ->     -- wordlist
   (B.ByteString -> Int) -- function converting bytestring to index (unknown word: 0)
 wordToIndexFactory wordlst wrd = M.findWithDefault (length wordlst) wrd (M.fromList (zip wordlst [0.. length wordlst]))
 
-toyEmbedding ::
+toyEmbedding :: -- jsp
   EmbeddingSpec ->
   Tensor           -- embedding
 toyEmbedding EmbeddingSpec{..} = 

@@ -45,7 +45,7 @@ mlp MLP {..} input = foldl' revApply input $ intersperse nonlinearity $ map line
 -- Training code
 --------------------------------------------------------------------------------
 
-batchSize = 2
+batchSize = 2 -- 256 en général, plus il est haut plus le modele est rapide, mais des problemes de mémoire /!\
 
 numIters = 2000
 
