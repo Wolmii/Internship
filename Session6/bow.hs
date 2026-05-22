@@ -29,10 +29,14 @@ import Torch.Tensor (Tensor, asTensor, asValue)
 import Torch.TensorFactories (eye', zeros')
 import Torch.Optim (GD(..), runStep) -- Import direct de GD
 import qualified Torch as T
+import qualified Data.ByteString.Lazy.Char8 as C
+import ML.Exp.Chart (drawLearningCurve)
+import Data.List.Split (splitOn)
 
 textFilePath = "Session6/data/sample.txt"
 modelPath =  "Session6/data/sample_embedding.params"
 wordLstPath = "Session6/data/sample_wordlst.txt"
+newPath = "Session6/data/data.txt"
 
 data EmbeddingSpec = EmbeddingSpec {
   wordNum :: Int,
@@ -48,6 +52,12 @@ data Model = Model {
     embeddings :: Embedding
   } deriving (Generic, Parameterized) -- Plus besoin d'instance manuelle avec GD !
 
+data File3 = File3 { -- datatype for the format of the new data txt 
+    score :: Float,
+    sent01 :: C.ByteString,
+    sent02 :: C.ByteString
+} deriving (Show)
+
 --STEP 1
 isUnncessaryChar :: Word8 -> Bool
 isUnncessaryChar str = str `elem` (map (head . encode)) [".", "!"]
@@ -57,6 +67,29 @@ preprocess texts = map (map (C.filter isAlphaNum) . C.words) textLines
   where
     filteredtexts = B.pack $ filter (not . isUnncessaryChar) (B.unpack texts)
     textLines = C.lines (C.map toLower filteredtexts)
+
+parseLineBasique :: C.ByteString -> [File3]
+parseLineBasique line = 
+  let colonnes = C.split '\t' line
+    in if length colonnes == 3 && not (C.null (colonnes !! 0))
+        then
+            -- good line 
+            let labelRaw = colonnes !! 0
+                sent1    = colonnes !! 1
+                sent2    = colonnes !! 2
+                score    = read (C.unpack labelRaw) :: Float
+            in [File3 score sent1 sent2]
+        else 
+            -- if more or not enought collumns
+            []
+
+newpreprocess :: FilePath -> IO [File3]
+newpreprocess fp = do 
+  content <- C.readFile fp
+  let allLines = C.lines (C.map toLower content)
+  let valid = concatMap parseLineBasique allLines
+  return valid 
+
 
 -- STEP 2
 wordToIndexFactory :: [B.ByteString] -> (B.ByteString -> Int)
@@ -76,7 +109,7 @@ toyEmbedding EmbeddingSpec{..} = eye' wordNum wordDim
 
 -- STEP 5
 cbow :: Tensor -> Tensor
-cbow vec = T.sumDim (Dim 1) KeepDim T.Float vec
+cbow vec = T.meanDim (Dim 0) T.RemoveDim T.Float vec
 
 -- STEP 6
 crossEntropyLoss :: Tensor -> Tensor -> Tensor
@@ -96,7 +129,7 @@ trainStep epoch batch model = do
         yTrain = asTensor cibles    
 
     let embTrain = embedding' (toDependent $ wordEmbedding $ embeddings model) xTrain
-    let bowInput = meanDim (Dim 1) RemoveDim T.Float embTrain
+    let bowInput = cbow embTrain
 
     let y'Train = mlpLayer (mlp model) bowInput
     let trainLoss = crossEntropyLoss y'Train yTrain
@@ -106,19 +139,101 @@ trainStep epoch batch model = do
     (newModel, _) <- runStep model GD trainLoss (1e-2 :: Tensor)
 
     when (epoch `mod` 5 == 0 || epoch == 1) $ do
-        putStrLn $ "Epoch " ++ show epoch ++ " | Train Loss: " ++ show trainLossValue
+        -- putStrLn $ "Epoch " ++ show epoch ++ " | Train Loss: " ++ show trainLossValue
         hFlush stdout
 
     return (newModel, trainLossValue)
 
+searchWord :: String -> IO Tensor
+searchWord wordStr = do
+  let word = C.pack wordStr
+  txt <- B.readFile wordLstPath
+  let wordlst = C.lines txt
+      wordToIndex = wordToIndexFactory wordlst
+      totalWords = length wordlst + 1
+      index = wordToIndex word -- get the index of the word 
+  
+  if index == totalWords 
+    then do 
+      putStrLn "Not in file"
+      return (T.zeros' [9])
+    else do 
+      -- create the new embedding 
+      let embsddingSpec = EmbeddingSpec {wordNum = totalWords, wordDim = 9}
+      wordEmb <- makeIndependent $ T.zeros' [totalWords, 9]
+      
+      let mlpSpec = MLPHypParams (T.Device T.CPU 0) 9 [(totalWords, Id)]
+      mlpComponent <- sample mlpSpec
+      let emptyModel = Model { mlp = mlpComponent, embeddings = Embedding { wordEmbedding = wordEmb } }
+
+      -- loads the params after training
+      newE <- loadParams emptyModel modelPath
+
+      -- extract the line corresponding to the index 
+      let embMatrix = toDependent $ wordEmbedding $ embeddings newE
+          vec = T.indexSelect 0 (asTensor [fromIntegral index :: Int64]) embMatrix
+      return vec
+
+trainCompare :: File3 -> IO Float
+trainCompare fils3 = do 
+  let sent1pre = concat $ preprocess (sent01 fils3)-- preprocess on the valid sentences
+      sent2pre = concat $ preprocess (sent02 fils3)
+  
+  vecsent1 <- mapM (\w -> searchWord (C.unpack w)) sent1pre-- search all the words in the embedded trained 
+  vecsent2 <- mapM (\w -> searchWord (C.unpack w)) sent2pre
+  
+  let mat1 = T.stack (Dim 0) vecsent1
+      mat2 = T.stack (Dim 0) vecsent2
+
+  let vec1 = cbow mat1-- create a vector with this
+      vec2 = cbow mat2
+  
+  let dotProduct = T.sumAll (vec1 * vec2)-- compare the two
+  let norm1 = T.sqrt (T.sumAll (vec1 * vec1))
+      norm2 = T.sqrt (T.sumAll (vec2 * vec2))
+  let scoreSim = dotProduct / (norm1 * norm2)
+
+  putStrLn $ "Ours : " ++ show scoreSim ++ " Real : " ++ show (score fils3)-- compare to the score
+  return (asValue scoreSim :: Float)
+  
+discretize :: Float -> Float
+discretize cosSim
+  | cosSim >= (-1.0) && cosSim < (-0.6) = 0.0
+  | cosSim >= (-0.6) && cosSim < (-0.2) = 1.0
+  | cosSim >= (-0.2) && cosSim < 0.2    = 2.0
+  | cosSim >= 0.2    && cosSim < 0.5    = 3.0
+  | cosSim >= 0.5    && cosSim < 0.8    = 4.0
+  | otherwise                           = 5.0
+
+epoc :: [Int]
+epoc = [1..200]
+
 main :: IO ()
 main = do
+  pairesFiltrees <- newpreprocess newPath
+  cosinusList <- mapM trainCompare pairesFiltrees
+  
+  let predictions = map discretize cosinusList
+      vraisScores = map score pairesFiltrees 
+      
+  let arrondisEgaux = zipWith (\pred reel -> pred == fromIntegral (round reel)) predictions vraisScores
+      nbCorrects    = length (filter id arrondisEgaux)
+      total         = length pairesFiltrees
+      accuracy      = (fromIntegral nbCorrects / fromIntegral total) * 100 :: Float
+
+  putStrLn $ "NB same : " ++ show nbCorrects ++ " / " ++ show total
+  putStrLn $ "Accuracy : " ++ show accuracy ++ " %"
+  
+  return ()
+
+  
+{-
   texts <- B.readFile textFilePath
 
   let wordLines = preprocess texts
       wordlst = nub $ concat wordLines
       wordToIndex = wordToIndexFactory wordlst
-  print wordlst
+  --print wordlst
 
   let totalWords = length wordlst + 1
 
@@ -134,16 +249,27 @@ main = do
   let idxes = map (map wordToIndex) wordLines
       datasetBatch = filter (\(ctx, _) -> not (null ctx)) (makeTargCont idxes)
 
-  putStrLn "*** Training with GD ***"
+  putStrLn "*** Training ***"
   
   (trainedModel, _) <- foldM (\(currentModel, _) epochNum -> do
         (!newModel, !lossVal) <- trainStep epochNum datasetBatch currentModel
         return (newModel, lossVal)
-    ) (initModel, 0 :: Float) [1..50]
+    ) (initModel, 0 :: Float) epoc
 
   putStrLn "*** End Training ***"
   
   saveParams trainedModel modelPath
   B.writeFile wordLstPath (B.intercalate (B.pack $ encode "\n") wordlst)
-  
+
+  vecLove <- searchWord "love"
+  print vecLove
+  --let chartData = [("loss", lossVal)]
+  --drawLearningCurve "loss.png" "Mon Graphique" chartData 
+  --putStrLn "Graphique généré : learning_curveEnd.png"
+-}
+
+  -- Load params
+  -- initWordEmb <- makeIndependent $ zeros' [1]
+  -- let initEmb = Embedding {wordEmbedding = initWordEmb}
+  -- loadedEmb <- loadParams initEmb modelPath
   return ()

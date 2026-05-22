@@ -129,6 +129,21 @@ executables:
     - utf8-string
     - bytestring
     - containers
+    - split
+
+  good:
+    main:                good.hs
+    source-dirs:         Session6
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -main-is Good
+    dependencies:
+    - int
+    - utf8-string
+    - bytestring
+    - containers
 
   session-3-multiple-regression:
     main:                MultipleRegression.hs
