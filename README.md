@@ -8,9 +8,11 @@ In this internship, the main goal is to focus on the functionment of AI, and of 
 # Session 3 Report : 
 
 Resultst :
+```
 Cost : Tensor Float []  558.6971   
 New A : Tensor Float []  0.5553
 New B : Tensor Float []  94.5845
+```
 
 While talking with Swann, we hesitated to normalize the values. 
 
@@ -24,8 +26,10 @@ The exercice wasn't really hard, i just struggled with the g/h questions to unde
 The main problem i eccounter was the errors, that aren't readable in haskell. But when i had the same multiple times, i understood what i had to do to get rid of it.  
 
 For the results, i used 40 epoch, and 2 alphas for the two variables : 
+```
 alphA = 0.000001
 alphB = 0.00005
+```
 This gaves me a final cost of 7.3586e-3 for the training, and New A : 2.2731e-3 and New B : 3.5184e-4. 
 With them, i calculated the cost of the validation graph, and the prediction of the values. 
 When we look at the predictions, and the real results, we can see if our model works well or not : 
@@ -75,13 +79,16 @@ Learning rate : 0.09
 
 ## results : 
 
+```
 TN : 1
 FP : 5
 FN : 0
 TP : 33
+
 precicsion  : 0.8684211
 recall  : 1.0
 accuracy  : 0.92957747
+```
 
 We can see that our model predicted 33 true positives, 5 fake posities and one true negative. That leads us to a precision of 0.8, and that mean that we got 80% of the people we predicted admitted were really admitted. We have a 1 recall, that means that we predicted all the people that were really admitted. And 92% of our predictions were right over all, meaning our model is quite precise. 
 
@@ -98,23 +105,51 @@ she medure the difference between chat we got and what we expected.
 
 # Session 6
 
-after one training, and searching for  the word "love" : 
+For this session, the hard part was the understanding. After that, i tried differents methods : using linear, and after i founded the mlp tool, that are easier to use. 
+Also, two methods of word prediction exists, and i choosed to use the BagOfWords method : we predict the word in the middle, based on the surrondings words. and i choosed to use only two words surroundings. 
+
+After one training, and searching for  the word "love" : 
 
 ##### Loss graph : 
 ![real](loss.png)
 
-ln : 0.99
-epoch : 1000
+```
+Learning rate : 0.99
+Epoch : 1000
+```
 
+And when we search for a word, we got this answer : 
 Tensor Float [1,9] [[-3.9167e-6, -3.1011e-6,  9.9972e-7,  2.2853e-6,  1.0000   ,  2.5378e-6,  1.9379e-7, -4.4165e-6, -1.0674e-8]]
 
 After evaluating our model : 
 NB same : 46 / 254
 Accuracy : 18.110237 %
 
-report : problemes/solutions, graphs, matrices, questions,...
+Our model is not really effec tive (20% accurate is low). We can think that with a bigger bag of datas, the accuracy will improve. But i can't test this hypothese, because my computer is not performant enought (doing it with 2000 datas tooks about 20 minutes). 
 
 
 # Session 7
 
+report : problemes/solutions, graphs, matrices, questions,...
+
 After analysing the two codes, my first idea is to keep the idea of the datatype from the hasktoch version, but adding details fot the calculs, like in the tolls one. 
+
+step 1 : 
+The first step is to define, for each data, if wwe keep it or get rid of it, dependaing of wha we need. 
+![alt text](image-6.png)
+
+step 2 : 
+The secon d state determines the values that we updates, and the ones we add. 
+![alt text](image-3.png)
+
+step 3 :
+The previous stated where to decide what we will do, this one is to really do it. So we update the cell. 
+![alt text](image-4.png)
+
+step 4 :
+Lastly, we choose what to output. 
+![alt text](image-5.png)
+
+```
+Bonjour
+```

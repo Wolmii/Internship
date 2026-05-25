@@ -48,3 +48,4 @@ instance Randomizable ElmanSpec ElmanCell where -- initialize a randoms cell (as
     w_hh <- makeIndependent =<< randnIO' [hidden_features, hidden_features]
     b <- makeIndependent =<< randnIO' [1, hidden_features]
     return $ ElmanCell w_ih w_hh b
+

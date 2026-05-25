@@ -44,6 +44,75 @@ library
     , vector
   default-language: Haskell2010
 
+executable admit
+  main-is: Admit.hs
+  other-modules:
+      Evaluation
+      Paths_int
+  autogen-modules:
+      Paths_int
+  hs-source-dirs:
+      Session5
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -main-is Admit
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , cassava
+    , gnuplot
+    , hasktorch
+    , hasktorch-tools
+    , int
+    , nlp-tools
+    , vector
+  default-language: Haskell2010
+
+executable bow
+  main-is: bow.hs
+  other-modules:
+      Paths_int
+  autogen-modules:
+      Paths_int
+  hs-source-dirs:
+      Session6
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -main-is Bow
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , cassava
+    , containers
+    , gnuplot
+    , hasktorch
+    , hasktorch-tools
+    , int
+    , nlp-tools
+    , split
+    , utf8-string
+    , vector
+  default-language: Haskell2010
+
+executable good
+  main-is: good.hs
+  other-modules:
+      Paths_int
+  autogen-modules:
+      Paths_int
+  hs-source-dirs:
+      Session6
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -main-is Good
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , cassava
+    , containers
+    , gnuplot
+    , hasktorch
+    , hasktorch-tools
+    , int
+    , nlp-tools
+    , utf8-string
+    , vector
+  default-language: Haskell2010
+
 executable int-exe
   main-is: Main.hs
   other-modules:
@@ -69,6 +138,7 @@ executable sess3
   main-is: LinearRegression.hs
   other-modules:
       GraduateAdmissionLinear
+      MultipleRegression
       Paths_int
   autogen-modules:
       Paths_int
@@ -91,12 +161,101 @@ executable sess3.2
   main-is: GraduateAdmissionLinear.hs
   other-modules:
       LinearRegression
+      MultipleRegression
       Paths_int
   autogen-modules:
       Paths_int
   hs-source-dirs:
       Session3
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , cassava
+    , gnuplot
+    , hasktorch
+    , hasktorch-tools
+    , int
+    , nlp-tools
+    , vector
+  default-language: Haskell2010
+
+executable sess4
+  main-is: PerceptronAndGate.hs
+  other-modules:
+      Paths_int
+  autogen-modules:
+      Paths_int
+  hs-source-dirs:
+      Session4
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -main-is PerceptronAndGate
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , cassava
+    , gnuplot
+    , hasktorch
+    , hasktorch-tools
+    , int
+    , nlp-tools
+    , vector
+  default-language: Haskell2010
+
+executable sess5
+  main-is: Evaluation.hs
+  other-modules:
+      Admit
+      Paths_int
+  autogen-modules:
+      Paths_int
+  hs-source-dirs:
+      Session5
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -main-is Evaluation
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , cassava
+    , gnuplot
+    , hasktorch
+    , hasktorch-tools
+    , int
+    , nlp-tools
+    , vector
+  default-language: Haskell2010
+
+executable session-3-multiple-regression
+  main-is: MultipleRegression.hs
+  other-modules:
+      GraduateAdmissionLinear
+      LinearRegression
+      Paths_int
+  autogen-modules:
+      Paths_int
+  hs-source-dirs:
+      Session3
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , cassava
+    , gnuplot
+    , hasktorch
+    , hasktorch-tools
+    , int
+    , nlp-tools
+    , vector
+  default-language: Haskell2010
+
+executable xor2
+  main-is: xor2.hs
+  other-modules:
+      PerceptronAndGate
+      Paths_int
+  autogen-modules:
+      Paths_int
+  hs-source-dirs:
+      Session4
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -main-is Xor2
   build-depends:
       base >=4.7 && <5
     , bytestring
