@@ -209,11 +209,10 @@ discretize cosSim
   | otherwise                           = 5.0
 
 epoc :: [Int]
-epoc = [1..3000]
+epoc = [1..1000]
 
 main :: IO ()
 main = do
-{-
   pairesFiltrees <- newpreprocess newPath
   cosinusList <- mapM trainCompare pairesFiltrees
   
@@ -229,8 +228,7 @@ main = do
   putStrLn $ "Accuracy : " ++ show accuracy ++ " %"
   
   return ()
--}
-
+{-
   texts <- B.readFile textFilePath
 
   let wordLines = preprocess texts
@@ -277,3 +275,4 @@ main = do
   -- let initEmb = Embedding {wordEmbedding = initWordEmb}
   -- loadedEmb <- loadParams initEmb modelPath
   return ()
+-}

@@ -103,10 +103,18 @@ after one training, and searching for  the word "love" :
 ##### Loss graph : 
 ![real](loss.png)
 
+ln : 0.99
+epoch : 1000
+
 Tensor Float [1,9] [[-3.9167e-6, -3.1011e-6,  9.9972e-7,  2.2853e-6,  1.0000   ,  2.5378e-6,  1.9379e-7, -4.4165e-6, -1.0674e-8]]
 
 After evaluating our model : 
-NB same : 52 / 254
-Accuracy : 20.47244 %
+NB same : 46 / 254
+Accuracy : 18.110237 %
 
 report : problemes/solutions, graphs, matrices, questions,...
+
+
+# Session 7
+
+After analysing the two codes, my first idea is to keep the idea of the datatype from the hasktoch version, but adding details fot the calculs, like in the tolls one. 
