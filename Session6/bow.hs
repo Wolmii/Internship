@@ -27,7 +27,7 @@ import Torch.NN (Parameterized(..), forward, Parameter, Linear, LinearSpec(..), 
 import Torch.Serialize (saveParams, loadParams)
 import Torch.Tensor (Tensor, asTensor, asValue)
 import Torch.TensorFactories (eye', zeros')
-import Torch.Optim (GD(..), runStep) -- Import direct de GD
+import Torch.Optim (GD(..), runStep)
 import qualified Torch as T
 import qualified Data.ByteString.Lazy.Char8 as C
 import ML.Exp.Chart (drawLearningCurve)
@@ -50,7 +50,7 @@ data Embedding = Embedding {
 data Model = Model {
     mlp :: MLPParams,
     embeddings :: Embedding
-  } deriving (Generic, Parameterized) -- Plus besoin d'instance manuelle avec GD !
+  } deriving (Generic, Parameterized)
 
 data File3 = File3 { -- datatype for the format of the new data txt 
     score :: Float,
@@ -115,10 +115,13 @@ cbow vec = T.meanDim (Dim 0) T.RemoveDim T.Float vec
 crossEntropyLoss :: Tensor -> Tensor -> Tensor
 crossEntropyLoss predictions target =
   let expScores = T.exp predictions
-      sumExp = cbow expScores
+      sumExp = T.sumDim (Dim 1) T.KeepDim T.Float expScores
       logSumExp = T.log sumExp
       targetScore = T.indexSelect 1 target predictions
   in T.mean (logSumExp - targetScore)
+
+lr :: Tensor --learning rate
+lr = 0.99
 
 trainStep :: Int -> [([Int], Int)] -> Model -> IO (Model, Float)
 trainStep epoch batch model = do
@@ -136,7 +139,7 @@ trainStep epoch batch model = do
         
     let !trainLossValue = asValue trainLoss :: Float
 
-    (newModel, _) <- runStep model GD trainLoss (1e-2 :: Tensor)
+    (newModel, _) <- runStep model GD trainLoss (lr)
 
     when (epoch `mod` 5 == 0 || epoch == 1) $ do
         -- putStrLn $ "Epoch " ++ show epoch ++ " | Train Loss: " ++ show trainLossValue
@@ -206,10 +209,11 @@ discretize cosSim
   | otherwise                           = 5.0
 
 epoc :: [Int]
-epoc = [1..200]
+epoc = [1..3000]
 
 main :: IO ()
 main = do
+{-
   pairesFiltrees <- newpreprocess newPath
   cosinusList <- mapM trainCompare pairesFiltrees
   
@@ -225,9 +229,8 @@ main = do
   putStrLn $ "Accuracy : " ++ show accuracy ++ " %"
   
   return ()
+-}
 
-  
-{-
   texts <- B.readFile textFilePath
 
   let wordLines = preprocess texts
@@ -251,11 +254,13 @@ main = do
 
   putStrLn "*** Training ***"
   
-  (trainedModel, _) <- foldM (\(currentModel, _) epochNum -> do
+  (trainedModel, allLosses) <- foldM (\(currentModel, losses) epochNum -> do
         (!newModel, !lossVal) <- trainStep epochNum datasetBatch currentModel
-        return (newModel, lossVal)
-    ) (initModel, 0 :: Float) epoc
-
+        when (epochNum `mod` 5 == 0 || epochNum == 1) $ do
+          putStrLn $ "Epoch " ++ show epochNum ++ " | Train Loss: " ++ show lossVal
+          hFlush stdout
+        return (newModel, losses ++ [lossVal])
+    ) (initModel, []) epoc
   putStrLn "*** End Training ***"
   
   saveParams trainedModel modelPath
@@ -263,10 +268,9 @@ main = do
 
   vecLove <- searchWord "love"
   print vecLove
-  --let chartData = [("loss", lossVal)]
-  --drawLearningCurve "loss.png" "Mon Graphique" chartData 
-  --putStrLn "Graphique généré : learning_curveEnd.png"
--}
+  let chartData = [("loss", allLosses)]
+  drawLearningCurve "loss.png" "Mon Graphique" chartData 
+  putStrLn "Graph : loss.png"
 
   -- Load params
   -- initWordEmb <- makeIndependent $ zeros' [1]

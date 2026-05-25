@@ -100,51 +100,13 @@ she medure the difference between chat we got and what we expected.
 
 after one training, and searching for  the word "love" : 
 
-*** Training ***
-Epoch 1 | Train Loss: 5.844233
-Epoch 5 | Train Loss: 5.8439035
-Epoch 10 | Train Loss: 5.8434916
-Epoch 15 | Train Loss: 5.8430796
-Epoch 20 | Train Loss: 5.8426685
-Epoch 25 | Train Loss: 5.8422556
-Epoch 30 | Train Loss: 5.8418446
-Epoch 35 | Train Loss: 5.841433
-Epoch 40 | Train Loss: 5.8410215
-Epoch 45 | Train Loss: 5.8406105
-Epoch 50 | Train Loss: 5.840199
-Epoch 55 | Train Loss: 5.839788
-Epoch 60 | Train Loss: 5.8393774
-Epoch 65 | Train Loss: 5.838967
-Epoch 70 | Train Loss: 5.8385563
-Epoch 75 | Train Loss: 5.8381457
-Epoch 80 | Train Loss: 5.837735
-Epoch 85 | Train Loss: 5.8373246
-Epoch 90 | Train Loss: 5.836915
-Epoch 95 | Train Loss: 5.8365045
-Epoch 100 | Train Loss: 5.836095
-Epoch 105 | Train Loss: 5.8356843
-Epoch 110 | Train Loss: 5.8352757
-Epoch 115 | Train Loss: 5.8348656
-Epoch 120 | Train Loss: 5.8344555
-Epoch 125 | Train Loss: 5.834047
-Epoch 130 | Train Loss: 5.8336377
-Epoch 135 | Train Loss: 5.8332286
-Epoch 140 | Train Loss: 5.8328195
-Epoch 145 | Train Loss: 5.8324113
-Epoch 150 | Train Loss: 5.8320026
-Epoch 155 | Train Loss: 5.831594
-Epoch 160 | Train Loss: 5.831185
-Epoch 165 | Train Loss: 5.8307767
-Epoch 170 | Train Loss: 5.830368
-Epoch 175 | Train Loss: 5.82996
-Epoch 180 | Train Loss: 5.8295527
-Epoch 185 | Train Loss: 5.8291445
-Epoch 190 | Train Loss: 5.8287363
-Epoch 195 | Train Loss: 5.828329
-Epoch 200 | Train Loss: 5.8279214
-*** End Training ***
+##### Loss graph : 
+![real](loss.png)
+
 Tensor Float [1,9] [[-3.9167e-6, -3.1011e-6,  9.9972e-7,  2.2853e-6,  1.0000   ,  2.5378e-6,  1.9379e-7, -4.4165e-6, -1.0674e-8]]
 
 After evaluating our model : 
 NB same : 52 / 254
 Accuracy : 20.47244 %
+
+report : problemes/solutions, graphs, matrices, questions,...
