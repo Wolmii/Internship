@@ -138,13 +138,15 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
-    - -main-is Rnn
+    - -main-is RNN
     dependencies:
     - int
     - utf8-string
     - bytestring
     - containers
     - split
+    - aeson
+    - mtl
 
   good:
     main:                good.hs

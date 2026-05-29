@@ -150,6 +150,14 @@ step 4 :
 Lastly, we choose what to output. 
 ![alt text](image-5.png)
 
+Issues encounters : 
+- for the training with existing emmbedding, it returns an error "Some parameters in a call to replaceParameters haven't been consumed!" 
+
+Result with random emmbedding : 
 ```
-Bonjour
+Epoch 100 | Loss : 1.7396241
+Graph : lossRNN.png généré.
+*** Eval ***
+Correct : 33 / 101
+Accuracy : 32.673267 %
 ```

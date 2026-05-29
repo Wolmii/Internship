@@ -29,7 +29,6 @@ import Torch.Tensor (Tensor, asTensor, asValue)
 import Torch.TensorFactories (eye', zeros')
 import Torch.Optim (GD(..), runStep)
 import qualified Torch as T
-import qualified Data.ByteString.Lazy.Char8 as C
 import ML.Exp.Chart (drawLearningCurve)
 import Data.List.Split (splitOn)
 
@@ -208,27 +207,11 @@ discretize cosSim
   | cosSim >= 0.5    && cosSim < 0.8    = 4.0
   | otherwise                           = 5.0
 
-epoc :: [Int]
+epoc :: [Int] --  number of training iteration 
 epoc = [1..1000]
 
 main :: IO ()
 main = do
-  pairesFiltrees <- newpreprocess newPath
-  cosinusList <- mapM trainCompare pairesFiltrees
-  
-  let predictions = map discretize cosinusList
-      vraisScores = map score pairesFiltrees 
-      
-  let arrondisEgaux = zipWith (\pred reel -> pred == fromIntegral (round reel)) predictions vraisScores
-      nbCorrects    = length (filter id arrondisEgaux)
-      total         = length pairesFiltrees
-      accuracy      = (fromIntegral nbCorrects / fromIntegral total) * 100 :: Float
-
-  putStrLn $ "NB same : " ++ show nbCorrects ++ " / " ++ show total
-  putStrLn $ "Accuracy : " ++ show accuracy ++ " %"
-  
-  return ()
-{-
   texts <- B.readFile textFilePath
 
   let wordLines = preprocess texts
@@ -269,10 +252,25 @@ main = do
   let chartData = [("loss", allLosses)]
   drawLearningCurve "loss.png" "Mon Graphique" chartData 
   putStrLn "Graph : loss.png"
+  -- ^ training
+
+  pairesFiltrees <- newpreprocess newPath
+  cosinusList <- mapM trainCompare pairesFiltrees
+  
+  let predictions = map discretize cosinusList
+      vraisScores = map score pairesFiltrees 
+      
+  let arrondisEgaux = zipWith (\pred reel -> pred == fromIntegral (round reel)) predictions vraisScores
+      nbCorrects    = length (filter id arrondisEgaux)
+      total         = length pairesFiltrees
+      accuracy      = (fromIntegral nbCorrects / fromIntegral total) * 100 :: Float
+
+  putStrLn $ "NB same : " ++ show nbCorrects ++ " / " ++ show total
+  putStrLn $ "Accuracy : " ++ show accuracy ++ " %"
+  -- ^ evaluating 
 
   -- Load params
   -- initWordEmb <- makeIndependent $ zeros' [1]
   -- let initEmb = Embedding {wordEmbedding = initWordEmb}
   -- loadedEmb <- loadParams initEmb modelPath
   return ()
--}
