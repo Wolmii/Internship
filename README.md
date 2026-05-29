@@ -132,28 +132,11 @@ Our model is not really effec tive (20% accurate is low). We can think that with
 
 report : problemes/solutions, graphs, matrices, questions,...
 
-After analysing the two codes, my first idea is to keep the idea of the datatype from the hasktoch version, but adding details fot the calculs, like in the tolls one. 
+After analysing the two codes, my first idea is to keep the idea of the datatype from the hasktoch version, but adding details fot the calculs, like in the tools one. 
 
-step 1 : 
-The first step is to define, for each data, if wwe keep it or get rid of it, dependaing of wha we need. 
-![alt text](image-6.png)
+The idea of RNN, is to make calculations, but with keeping in mind the previous ones. We take a sentence, give a vector for each words, remembering the words before. We add those vectors, and it gives us a direction for the sentence. We translate this direction into a number, that we change into a stars-ratting, and we compare the one we got and teh real one. 
 
-step 2 : 
-The secon d state determines the values that we updates, and the ones we add. 
-![alt text](image-3.png)
-
-step 3 :
-The previous stated where to decide what we will do, this one is to really do it. So we update the cell. 
-![alt text](image-4.png)
-
-step 4 :
-Lastly, we choose what to output. 
-![alt text](image-5.png)
-
-Issues encounters : 
-- for the training with existing emmbedding, it returns an error "Some parameters in a call to replaceParameters haven't been consumed!" 
-
-Result with random emmbedding : 
+Result with random embedding with mse :
 ```
 Epoch 100 | Loss : 1.7396241
 Graph : lossRNN.png généré.
@@ -161,3 +144,38 @@ Graph : lossRNN.png généré.
 Correct : 33 / 101
 Accuracy : 32.673267 %
 ```
+
+And with cross entropy : 
+```
+Epoch 1000 | Loss : 0.3196544
+Graph : lossRNNRandom.png généré.
+*** Eval ***
+Correct : 89 / 101
+Accuracy : 88.11881 %
+```
+with crossentropy. I tried with mse, but it was a 30% accuracy. 
+
+##### Loss graph : 
+![real](lossRNNRandom.png)
+
+Issues encounters : 
+- the number of words in the embedding that we charge is not the same as the one haskell expect. So i counted the number of ligns in the embedding that we use with : 
+```(Get-Content Session6/data/sample_wordlst.txt).Count```
+And i used this value to create the model.
+But after that, it was missing a place for the unknow words. So i changed the wordtoindex, to force them to take a random index. 
+When i switched to cross entropy, the problem came back, and it's not fixed yet. It's due to the fact that the embedding is not in the right dimensions for the crossentropy, i think. Still working on it tho.  
+
+After training with the embedding existing, with mse , we got : 
+```
+Epoch 100 | Loss : 1.753304
+Graph : lossRNN.png généré.
+*** Eval ***
+Correct : 34 / 101
+Accuracy : 33.663364 %
+```
+##### Loss graph : 
+![real](lossRNN.png)
+
+The difference is small with mse, and we have multiple reasons. The first one, is the problems i explain earlier, i forced the unknow words to take 0 as index, making some "noise" in the already trained embedding, where in the random one, every words as it's index. 
+The second one is the 9 dimension, that is small for this kind of exercice. 
+The third one is the small amount of data used, for the previous embedding, and for the training. 

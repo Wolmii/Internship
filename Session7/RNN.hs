@@ -70,7 +70,6 @@ data RNN = RNN {
   bias          :: Parameter
 } deriving (Show, Generic, Parameterized)
 
--- Le modèle du prof complété exactement comme demandé dans ses TODO !
 data Model = Model {
   emb     :: Embedding,
   rnn     :: RNN,
@@ -87,12 +86,16 @@ instance RecurrentCell RNN where
         b  = toDependent bias
     in gate input hidden tanhFunc ih hh b
 
+-- the calcul behind the rnn, with weight and bias
 gate :: Tensor -> Tensor -> (Tensor -> Tensor) -> Tensor -> Tensor -> Tensor -> Tensor
 gate input hidden activ w_ih w_hh b = activ (T.matmul input w_ih + T.matmul hidden w_hh + b)
 
+-- the activation functino we use 
 tanhFunc :: Tensor -> Tensor
-tanhFunc x = (T.exp x - T.exp (-x)) / (T.exp x + T.exp (-x))
+-- tanhFunc x = (T.exp x - T.exp (-x)) / (T.exp x + T.exp (-x))
+tanhFunc x = T.tanh x
 
+-- cut the sentence into words 
 unstack :: Tensor -> [Tensor]
 unstack t = [T.select 0 i t | i <- [0 .. (head (T.shape t) - 1)]]
 
@@ -100,8 +103,10 @@ instance Randomizable ModelSpec Model where
   sample ModelSpec {..} = 
     Model
     <$> (Embedding <$> (makeIndependent =<< randnIO' [wordNum, wordDim]))
-    <*> sample (RnnSpec wordDim 9) -- Initialise le RNN (inputDim = wordDim, hiddenDim = 9)
-    <*> sample (LinearHypParams (T.Device T.CPU 0) True 9 1) -- Décodeur de 9 vers 1
+    <*> sample (RnnSpec wordDim 9) 
+    <*> sample (LinearHypParams (T.Device T.CPU 0) True 9 5)
+    -- <*> sample (RnnSpec wordDim 64)
+    -- <*> sample (LinearHypParams (T.Device T.CPU 0) True 64 1) 
 
 instance Randomizable RnnSpec RNN where
   sample RnnSpec {..} = do
@@ -111,12 +116,16 @@ instance Randomizable RnnSpec RNN where
     return $ RNN w_ih w_hh b
 
 -- initialize the model
-initialize :: ModelSpec -> {-FilePath -> -}IO Model
-initialize modelSpec = do
+initialize :: ModelSpec -> FilePath -> IO Model
+initialize modelSpec embPath = do
   randomizedModel <- sample modelSpec
-  --loadedEmb <- loadParams (emb randomizedModel) embPath
-  --return Model {emb = loadedEmb, rnn = rnn randomizedModel, decoder = decoder randomizedModel}
-  return randomizedModel
+  loadedEmb <- loadParams (emb randomizedModel) embPath
+  return Model {
+    emb = loadedEmb, 
+    rnn = rnn randomizedModel, 
+    decoder = decoder randomizedModel
+  }
+  --return randomizedModel
 
 -- let the word go ine by one in the RNN
 forwardRegression :: Model -> Tensor -> [Int64] -> Tensor
@@ -128,13 +137,16 @@ forwardRegression model h0 wordIds =
       
       hLast = foldl' (\hBrut x_t -> nextState (rnn model) x_t hBrut) h0 wordVectors
       rawPrediction = linearLayer (decoder model) hLast
-  in rawPrediction
+      
+      batchedPrediction = T.unsqueeze (Dim 0) rawPrediction 
+  in batchedPrediction
 
-predictRatingRegression :: Model -> [Int64] -> Float
-predictRatingRegression model wordIds =
+predictRatingClassification :: Model -> [Int64] -> Int64
+predictRatingClassification model wordIds =
   let h0 = T.zeros' [9]
-      predTensor = forwardRegression model h0 wordIds 
-  in asValue predTensor :: Float
+      predTensor = forwardRegression model h0 wordIds
+      bestClass = T.argmax (Dim 1) T.RemoveDim predTensor
+  in asValue bestClass :: Int64
 
 amazonReviewPath :: FilePath
 amazonReviewPath = "Session7/data/tr.jsonl"
@@ -150,16 +162,20 @@ decodeToAmazonReview jsonl =
   let jsonList = B.split (B.c2w '\n') jsonl
   in sequenceA $ map eitherDecode (filter (not . B.null) jsonList)
 
+-- clear the sentences, with no caps and no symbole
 preprocess :: B.ByteString -> [[B.ByteString]]
 preprocess texts = map (map (C.filter isAlphaNum) . C.words) textLines
   where
     filteredtexts = B.pack $ filter (\w -> w `notElem` map (head . encode) [".", "!"]) (B.unpack texts)
     textLines = C.lines (C.map toLower filteredtexts)
 
+-- get the sentence, and give each word an index 
 wordToIndexFactory :: [B.ByteString] -> (B.ByteString -> Int64)
 wordToIndexFactory wordlst wrd = 
-  M.findWithDefault (fromIntegral (length wordlst)) wrd (M.fromList (zip wordlst [0..]))
+  --M.findWithDefault (fromIntegral (length wordlst)) wrd (M.fromList (zip wordlst [0..]))
+  M.findWithDefault 0 wrd (M.fromList (zip wordlst [0..]))
 
+-- how we transform the floats in star rating 
 discretize :: Float -> Float
 discretize cosSim
   | cosSim >= 0    && cosSim < 0.5 = 0.0
@@ -169,29 +185,39 @@ discretize cosSim
   | cosSim >= 3.5  && cosSim < 4.5 = 4.0
   | otherwise                      = 5.0
 
-mseLoss :: Tensor -> Tensor -> Tensor
-mseLoss prediction target = T.mean ((prediction - target) * (prediction - target))
+-- the loss
+crossEntropyLoss :: Tensor -> Tensor -> Tensor
+crossEntropyLoss predictions target =
+  let expScores = T.exp predictions
+      sumExp = T.sumDim (Dim 1) T.KeepDim T.Float expScores
+      logSumExp = T.log sumExp
+      targetScore = T.indexSelect 1 target predictions
+  in T.mean (logSumExp - targetScore)
 
 trainStep :: [([Int64], Float)] -> Model -> IO (Model, Float)
 trainStep batch model = do
-  let lr = 0.01
+  let lr = 0.3
   let hDim = 9
 
   let totalLoss = foldl' (\accLoss (wordIds, targetRating) ->
           let h0 = T.zeros' [hDim]
               pred = forwardRegression model h0 wordIds
-              target = T.asTensor [targetRating]
-              loss = mseLoss pred target
+              
+              targetIdx = round targetRating - 1 :: Int64
+              target = T.asTensor [[targetIdx]]
+              
+              loss = crossEntropyLoss pred target
           in accLoss + loss
         ) (T.zeros' [1]) batch
 
   let meanLoss = totalLoss / T.asTensor [fromIntegral (length batch) :: Float]
-  --let wEmb = toDependent (wordEmbedding (emb model))
-  --let finalLoss = meanLoss + (T.sumAll wEmb * T.asTensor [0.0 :: Float])
-  let !lossValue = T.asValue meanLoss :: Float --or finalLoss
+  let !lossValue = T.asValue meanLoss :: Float
 
   (newModel, _) <- runStep model GD meanLoss lr
   return (newModel, lossValue)
+
+epoc :: [Int] --  number of training iteration 
+epoc = [1..1000]
 
 main :: IO ()
 main = do
@@ -206,10 +232,11 @@ main = do
 
   let modelSpec = ModelSpec {
     wordDim = 9, 
-    wordNum = totalWords
+    wordNum = 341
+    --wordNum = totalWords
   }
-  --initModel <- initialize modelSpec embeddingPath
-  initModel <- initialize modelSpec
+  initModel <- initialize modelSpec embeddingPath
+  --initModel <- initialize modelSpec
 
   let dataset = map (\r -> 
           let tokens = concat $ preprocess (C.pack $ text r)
@@ -225,7 +252,7 @@ main = do
         putStrLn $ "Epoch " ++ show epochNum ++ " | Loss : " ++ show lossVal
         hFlush stdout
         return (newModel, losses ++ [lossVal])
-    ) (initModel, []) [1..100]
+    ) (initModel, []) epoc
 
   let chartData = [("loss", allLosses)]
   drawLearningCurve "lossRNN.png" "Courbe d'apprentissage RNN" chartData 
@@ -233,8 +260,9 @@ main = do
 
   putStrLn "*** Eval ***"
   let resultats = map (\(ids, vraieNote) ->
-          let notePredite = predictRatingRegression trainedModel ids
-          in discretize notePredite == discretize vraieNote
+          let indexPredit = predictRatingClassification trainedModel ids
+              indexReel   = round vraieNote - 1 :: Int64
+          in indexPredit == indexReel
         ) cleanDataset
 
   let nbCorrects = length (filter id resultats)
