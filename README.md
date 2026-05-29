@@ -145,6 +145,19 @@ Correct : 33 / 101
 Accuracy : 32.673267 %
 ```
 
+And with cross entropy : 
+```
+Epoch 1000 | Loss : 0.3196544
+Graph : lossRNNRandom.png généré.
+*** Eval ***
+Correct : 89 / 101
+Accuracy : 88.11881 %
+```
+with crossentropy. I tried with mse, but it was a 30% accuracy. 
+
+##### Loss graph : 
+![real](lossRNNRandom.png)
+
 Issues encounters : 
 - the number of words in the embedding that we charge is not the same as the one haskell expect. So i counted the number of ligns in the embedding that we use with : 
 ```(Get-Content Session6/data/sample_wordlst.txt).Count```
