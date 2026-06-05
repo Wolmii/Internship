@@ -5,7 +5,7 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE BangPatterns #-}
 
-module RNN where
+module LSTM where
 
 import Codec.Binary.UTF8.String (encode)
 import Data.Aeson (FromJSON(..), ToJSON(..), eitherDecode)
@@ -59,12 +59,12 @@ data Embedding = Embedding {
   wordEmbedding :: Parameter
 } deriving (Show, Generic, Parameterized)
 
-data RnnSpec = RnnSpec { 
+data LstmSpec = LstmSpec { 
   inputDim  :: Int,
   hiddenDim :: Int
 } deriving (Show, Eq, Generic)
 
-data RNN = RNN { 
+data LSTM = LSTM { 
   input_weight  :: Parameter,
   hidden_weight :: Parameter,
   bias          :: Parameter
@@ -72,21 +72,21 @@ data RNN = RNN {
 
 data Model = Model {
   emb     :: Embedding,
-  rnn     :: RNN,
+  lstm     :: LSTM,
   decoder :: LinearParams
 } deriving (Show, Generic, Parameterized)
 
 class RecurrentCell cell where
   nextState :: cell -> Tensor -> Tensor -> Tensor
 
-instance RecurrentCell RNN where
-  nextState RNN {..} input hidden = 
+instance RecurrentCell LSTM where
+  nextState LSTM {..} input hidden = 
     let ih = toDependent input_weight
         hh = toDependent hidden_weight
         b  = toDependent bias
     in gate input hidden tanhFunc ih hh b
 
--- the calcul behind the rnn, with weight and bias
+-- the calcul behind the lstm, with weight and bias
 gate :: Tensor -> Tensor -> (Tensor -> Tensor) -> Tensor -> Tensor -> Tensor -> Tensor
 gate input hidden activ w_ih w_hh b = activ (T.matmul input w_ih + T.matmul hidden w_hh + b)
 
@@ -103,10 +103,8 @@ instance Randomizable ModelSpec Model where
   sample ModelSpec {..} = 
     Model
     <$> (Embedding <$> (makeIndependent =<< randnIO' [wordNum, wordDim]))
-    <*> sample (RnnSpec wordDim 500) 
+    <*> sample (LstmSpec wordDim 500) 
     <*> sample (LinearHypParams (T.Device T.CPU 0) True 500 5)
-    -- <*> sample (RnnSpec wordDim 64)
-    -- <*> sample (LinearHypParams (T.Device T.CPU 0) True 64 1) 
 
 instance Randomizable RnnSpec RNN where
   sample RnnSpec {..} = do
@@ -131,13 +129,13 @@ initialize modelSpec {-embPath -}= do
   loadedEmb <- loadParams (emb randomizedModel) embPath
   return Model {
     emb = loadedEmb, 
-    rnn = rnn randomizedModel, 
+    lstm = lstm randomizedModel, 
     decoder = decoder randomizedModel
   }
   -}
   return randomizedModel
 
--- let the word go ine by one in the RNN
+-- let the word go ine by one in the LSTM
 forwardRegression :: Model -> Tensor -> [Int64] -> Tensor
 forwardRegression model h0 wordIds =
   let xTrain = asTensor wordIds
@@ -145,7 +143,7 @@ forwardRegression model h0 wordIds =
       embTrain = embedding' wEmb xTrain 
       wordVectors = unstack embTrain
       
-      hLast = foldl' (\hBrut x_t -> nextState (rnn model) x_t hBrut) h0 wordVectors
+      hLast = foldl' (\hBrut x_t -> nextState (lstm model) x_t hBrut) h0 wordVectors
       rawPrediction = linearLayer (decoder model) hLast
       
       batchedPrediction = T.unsqueeze (Dim 0) rawPrediction 
@@ -158,17 +156,12 @@ predictRatingClassification model wordIds =
       bestClass = T.argmax (Dim 1) T.RemoveDim predTensor
   in asValue bestClass :: Int64
 
-amazonReviewPath :: FilePath
-amazonReviewPath = "Session7/data/tr.jsonl"
+trainPath :: FilePath
+trainPath = "FinalSession/data/train.csv"
 
-wordLstPath :: FilePath
-wordLstPath = "Session6/data/sample_wordlst.txt"
+testPath :: FilePath
+testPath = "FinalSession/data/test.csv"
 
-embeddingPath :: FilePath
-embeddingPath = "Session6/data/sample_embedding.params"
-
-amazonTestPath :: FilePath
-amazonTestPath = "Session7/data/tst.jsonl"
 
 decodeToAmazonReview :: B.ByteString -> Either String [AmazonReview] 
 decodeToAmazonReview jsonl =
@@ -234,7 +227,7 @@ trainStep batch model = do
   return (newModel, lossValue)
 
 epoc :: [Int] --  number of training iteration 
-epoc = [1..400]
+epoc = [1..100]
 
 main :: IO ()
 main = do
@@ -243,7 +236,7 @@ main = do
       totalWords  = length wordLst + 1
 
   -- training data
-  jsonlTrain <- B.readFile amazonReviewPath
+  jsonlTrain <- B.readFile trainPath
   let reviewsTrain = case decodeToAmazonReview jsonlTrain of
                        Left err -> []
                        Right r  -> r
@@ -255,7 +248,7 @@ main = do
       cleanDatasetTrain = filter (\(ids, _) -> not (null ids)) datasetTrain
 
   -- test data
-  jsonlTest <- B.readFile amazonTestPath
+  jsonlTest <- B.readFile testPath
   let reviewsTest = case decodeToAmazonReview jsonlTest of
                       Left err -> []
                       Right r  -> r

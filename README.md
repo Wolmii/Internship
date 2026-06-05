@@ -145,6 +145,18 @@ Correct : 33 / 101
 Accuracy : 32.673267 %
 ```
 
+And with cross entropy : 
+```
+Epoch 1000 | Loss : 0.3196544
+Graph : lossRNNRandom.png généré.
+*** Eval ***
+Correct : 89 / 101
+Accuracy : 88.11881 %
+```
+with crossentropy. I tried with mse, but it was a 30% accuracy. 
+
+##### Loss graph : 
+![real](lossRNNRandom.png)
 
 Issues encounters : 
 - the number of words in the embedding that we charge is not the same as the one haskell expect. So i counted the number of ligns in the embedding that we use with : 
@@ -153,17 +165,39 @@ And i used this value to create the model.
 But after that, it was missing a place for the unknow words. So i changed the wordtoindex, to force them to take a random index. 
 When i switched to cross entropy, the problem came back, and it's not fixed yet. It's due to the fact that the embedding is not in the right dimensions for the crossentropy, i think. Still working on it tho.  
 
+```
+hidden layer : 500
+word dimention : 200
+```
+
 After training with the embedding existing, with mse , we got : 
 ```
-Epoch 100 | Loss : 1.753304
-Graph : lossRNN.png généré.
+Epoch 400 | Loss : 0.19944482
+Graph : lossRNN2.png généré.
 *** Eval ***
-Correct : 34 / 101
-Accuracy : 33.663364 %
+Correct : 39 / 141
+Accuracy : 27.659575 %
 ```
 ##### Loss graph : 
-![real](lossRNN.png)
+![real](lossRNN2.png)
 
 The difference is small with mse, and we have multiple reasons. The first one, is the problems i explain earlier, i forced the unknow words to take 0 as index, making some "noise" in the already trained embedding, where in the random one, every words as it's index. 
 The second one is the 9 dimension, that is small for this kind of exercice. 
 The third one is the small amount of data used, for the previous embedding, and for the training. 
+
+F1 score too, not just accuracy
+confusion matrix too :)
+
+#Last Session
+
+LSTM model, who define if a phrase is a loving one or a hatefull one. 
+
+The dataset is from : https://huggingface.co/datasets/dair-ai/emotion/tree/main/split
+The data were originally in parquet, but i made them into csv, to make the analyze easier. 
+
+0 sadness
+1 joy
+2 love
+3 anger
+4 fear
+5 surprise
