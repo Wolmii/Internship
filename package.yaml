@@ -165,6 +165,23 @@ executables:
     - aeson
     - mtl
 
+  using:
+    main:                using.hs
+    source-dirs:         FinalSession
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -main-is Using
+    dependencies:
+    - int
+    - utf8-string
+    - bytestring
+    - containers
+    - split
+    - aeson
+    - mtl
+
   good:
     main:                good.hs
     source-dirs:         Session6
